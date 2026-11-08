@@ -6,11 +6,13 @@ This is my first document stored in Git for Cisco one.
 
 Setup notes for CCNA: Introduction to Networks
 
-Modules 1 (Networking Today) and 3 (Protocols and Models) are mostly ideas like network types, TCP/IP, and the OSI model, and they are explained in the Background sections of this guide. The commands all come from module 2 (Basic Switch and End Device Configuration). Follow the steps in order and you end up with a switch that is named, locked down, addressed, reachable over SSH, and saved.
+Modules 1 (Networking Today) and 3 (Protocols and Models) are mostly ideas like network types, TCP/IP, and the OSI model, and they are explained in the Background sections of this guide. The commands all come from module 2 (Basic Switch and End Device Configuration). Everything is written for Cisco Packet Tracer, so each step has its own Packet Tracer notes, and there is a full walkthrough of the Packet Tracer activity near the end. Follow the steps in order and you end up with a switch that is named, locked down, addressed, reachable over SSH, and saved.
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Packet Tracer Basics](#packet-tracer-basics)
+- [Dummy's Guide: Set Up a Switch in Packet Tracer](#dummys-guide-set-up-a-switch-in-packet-tracer)
 - [Background: Module 1 (Networking Today)](#background-module-1-networking-today)
 - [Background: Module 2 (Basic Switch and End Device Configuration)](#background-module-2-basic-switch-and-end-device-configuration)
 - [Step 1: Basic switch configuration](#step-1-basic-switch-configuration)
@@ -18,14 +20,16 @@ Modules 1 (Networking Today) and 3 (Protocols and Models) are mostly ideas like 
 - [Step 3: Switch ports (speed and duplex)](#step-3-switch-ports-speed-and-duplex)
 - [Step 4: Secure remote access with SSH](#step-4-secure-remote-access-with-ssh)
 - [Step 5: Verify, save, and troubleshoot](#step-5-verify-save-and-troubleshoot)
+- [Packet Tracer Lab: Activity 2.9.1](#packet-tracer-lab-activity-291)
 - [Background: Module 3 (Protocols and Models)](#background-module-3-protocols-and-models)
 - [Command cheat sheet](#command-cheat-sheet)
+- [Packet Tracer cheat sheet](#packet-tracer-cheat-sheet)
 
 ## Overview
 
 ### What you need
 
-- Packet Tracer, or a real Cisco switch with a console cable
+- Cisco Packet Tracer (free from Cisco Networking Academy), or a real Cisco switch with a console cable
 - At least one PC connected to the switch (a PC icon in Packet Tracer)
 - Your lab's addressing table (device names and IP addresses)
 
@@ -108,8 +112,411 @@ You only have to type enough of a command for it to be the only match. Some comm
 | `sh ip int br` | `show ip interface brief` |
 | `copy run start` | `copy running-config startup-config` |
 
-
 If you type too little and more than one command matches, the switch says the command is ambiguous. Type a few more letters and try again.
+
+## Packet Tracer Basics
+
+This guide is meant to be done in Cisco Packet Tracer, so this part shows you around before you start typing commands. It works the same for the example lab in this guide and for the Packet Tracer activities from class.
+
+### The Packet Tracer screen
+
+| Part | Where it is | What it does |
+|------|-------------|--------------|
+| Workspace | The big middle area | Where your devices and cables go. There are two views. **Logical** shows devices and cables like a diagram, and **Physical** shows rooms and racks. Use Logical for everything in this guide. |
+| Device-type box | Bottom left | Lets you pick a kind of device: Network Devices (routers and switches), End Devices (PCs), Components, Connections (cables), Miscellaneous, and Multiuser. |
+| Device list | Next to the device-type box | Shows the actual devices of that kind, like a 2960 switch or a PC. |
+| Realtime / Simulation | Bottom right of the workspace | **Realtime** is normal. **Simulation** lets you watch packets move one step at a time. |
+| Time and fast-forward | Under the workspace, next to the Time clock | The fast-forward button skips ahead so link lights turn green faster. |
+| Top toolbar | Top of the window | Save, open, zoom, and tools like Select, Delete (the X), Inspect, and Add Simple PDU (the closed envelope). |
+| PT Activity window | A separate window, only for activity files | Has the instructions, the addressing table, and the **Check Results** button. |
+
+### Tabs when you click a device
+
+| Device | Tabs | What they do |
+|--------|------|--------------|
+| Switch | Physical, Config, CLI, Attributes | Physical shows the box and the power switch. Config has simple menus. **CLI** is where you type commands. |
+| PC | Physical, Config, Desktop, Programming, Attributes | **Desktop** has the tools you use the most: IP Configuration, Command Prompt, Terminal, and Telnet / SSH Client. |
+
+### Cables
+
+Click the **Connections** icon (the lightning bolt) in the device-type box to see the cables.
+
+| Cable | What it looks like | Use it for |
+|-------|--------------------|-----------|
+| Console | Light blue wavy line | PC `RS 232` port to switch `Console` port. This is the one for configuring a switch the first time. |
+| Copper straight-through | Solid black line | PC to switch, switch to router |
+| Copper cross-over | Dashed black line | Switch to switch, PC to PC |
+| Automatically Choose (lightning bolt) | Packet Tracer picks for you | Fine for normal labs, but do not use it when a lab says to use a console cable |
+
+To connect two devices: pick the cable, click the first device and choose a port from the menu, then click the second device and choose its port. To remove a cable, use the Delete tool (the X in the toolbar) and click it.
+
+Newer switches can tell which cable type is plugged in (this is what `mdix auto` does), so a straight-through cable between switches may still work in Packet Tracer. The textbook answer is still cross-over for switch to switch, so use that when a lab asks.
+
+### Link lights
+
+The little triangle at the end of each cable shows the port status.
+
+| Light | What it means |
+|-------|---------------|
+| Green | The link is up and working |
+| Amber (orange) | The switch port is still starting up. Wait about 30 seconds, or click the fast-forward button. |
+| Red | The link is down. Check that the cable is on the right port, that both devices are on, and that the port is not shut down. |
+| No light at all on a console cable | Normal. Console cables do not show link lights. |
+
+### Build the example lab from scratch
+
+This builds the lab used in the rest of this guide (S1, PC1, and PC2).
+
+1. In the device-type box, click **Network Devices**, then **Switches**, and drag a **2960** switch onto the workspace.
+2. Click **End Devices** and drag two **PC**s onto the workspace.
+3. Click the **Connections** icon and pick **Copper Straight-Through**. Click PC1, choose `FastEthernet0`, then click the switch and choose `FastEthernet0/1`.
+4. Do the same for PC2, and plug it into `FastEthernet0/2` on the switch.
+5. Pick the **Console** cable. Click PC1, choose `RS 232`, then click the switch and choose `Console`.
+6. Wait for the green lights, or click the fast-forward button.
+
+To rename a device label, click the device, go to the **Config** tab, and change the **Display Name**. The display name only changes the label on the screen. It does not change the switch name you see in the CLI, because that comes from the `hostname` command.
+
+### Console connection: Terminal vs the CLI tab
+
+There are two places to type switch commands, and they are not the same thing.
+
+| Way | How to open it | When to use it |
+|-----|----------------|----------------|
+| **Terminal** (a real console connection) | Click the PC that has the console cable, go to **Desktop**, then **Terminal**, and click **OK** | When a lab says to use a console connection. This needs the console cable between the PC and the switch. |
+| **CLI tab** | Click the switch, then the **CLI** tab | Quick config when the lab does not mention a console. It does not need a cable. |
+
+The Terminal window has settings (9600 bits per second, 8 data bits, no parity, 1 stop bit, no flow control). Leave them at the defaults and click OK. Press Enter until you see a prompt. If the window stays blank, check that the console cable goes from `RS 232` on the PC to `Console` on the switch.
+
+### Tools on a PC's Desktop tab
+
+| Tool | What it does |
+|------|--------------|
+| IP Configuration | Sets the IP address, subnet mask, and default gateway (static), or turns on DHCP |
+| Command Prompt | Lets you run `ipconfig`, `ipconfig /all`, `ping`, and `ssh` |
+| Terminal | The console connection to a switch (needs the console cable) |
+| Telnet / SSH Client | Another way to log into a switch over the network |
+
+**Subnet mask warning:** when you type an IP address in IP Configuration, Packet Tracer fills in the subnet mask by itself, and it can be wrong. For `192.168.1.x` it picks `255.255.255.0`, which is right for this guide. For `128.107.20.x` it picks `255.255.0.0`, which is wrong for a lab that uses `255.255.255.0`. Always look at the Subnet Mask box after you type the IP address and fix it if it is wrong.
+
+### Simulation mode (see Module 3 in action)
+
+Simulation mode shows packets moving through your network, which is a good way to see the models from Module 3.
+
+1. Click **Simulation** (bottom right of the workspace).
+2. Click the **Add Simple PDU** tool (the closed envelope in the toolbar), then click the source device and the destination device.
+3. Click the **Capture / Forward** button to move the packet one step.
+4. Click the little envelope on the screen to open it. The **OSI Model** tab shows what happens at each layer, and the **Inbound PDU Details** and **Outbound PDU Details** tabs show the headers and addresses.
+
+Click **Realtime** to go back to normal when you are done.
+
+### Saving in Packet Tracer
+
+There are two different things to save, and you need both.
+
+1. **The switch config:** type `copy running-config startup-config` (or `copy run start`) on each switch. If you skip this, the config is gone when the switch restarts.
+2. **The Packet Tracer file:** press Ctrl+S or use File, then Save. This saves your devices, cables, and the saved switch configs. If you reopen the file later, only what you saved with `copy run start` is still on the switches.
+
+## Dummy's Guide: Set Up a Switch in Packet Tracer
+
+This is the exact order to set up a switch, every time. Do the steps in this order, type exactly what is shown, and check what you should see before you move on to the next one. Anything in {curly braces} is a spot where you type your own value. Don't type the curly braces.
+
+### Before you start
+
+- [ ] The switch and PC are on the workspace and connected with a straight-through cable
+- [ ] The console cable goes from the PC's `RS 232` port to the switch's `Console` port
+- [ ] The link lights are green (click the fast-forward button if they are amber)
+- [ ] You filled in the sheet below
+
+**Fill-in sheet** (write your values here before you start typing):
+
+| What you need | Your value |
+|---------------|------------|
+| Switch name (hostname) | {name} |
+| Enable secret (the Privileged EXEC password) | {secret} |
+| Line password (for the console and VTY lines) | {password} |
+| Banner message | {message} |
+| Switch IP address | {ip} |
+| Subnet mask | {mask} |
+| Default gateway (only if your lab gives one) | {gateway} |
+
+### Step A: Open the console
+
+1. Click the PC, then **Desktop**, then **Terminal**, then **OK**.
+2. Press Enter.
+
+**You should see:** `Switch>`
+
+If you see `User Access Verification` and a `Password:` prompt, the switch already has a password, so type it. If the window is blank, check the console cable and press Enter again.
+
+### Step B: Get into configuration mode
+
+```
+enable
+configure terminal
+```
+
+**You should see:** `Switch(config)#`
+
+The prompt changes twice: `Switch>` becomes `Switch#` after `enable`, and `Switch#` becomes `Switch(config)#` after `configure terminal`. Don't go on until you see `(config)#`.
+
+### Step C: Name the switch
+
+```
+hostname {name}
+```
+
+**You should see:** the prompt changes to your name. For example, `hostname ASw-1` makes the prompt `ASw-1(config)#`.
+
+The name can't have spaces, it should start with a letter, and capital letters matter.
+
+### Step D: Add the enable secret (the secret version of a password)
+
+```
+enable secret {secret}
+```
+
+For example: `enable secret C4aJa`
+
+- Type `enable secret`, a space, and then the password. Nothing else.
+- **You should see:** nothing. The prompt stays the same and no message shows up. That is normal.
+- Use `secret` and not `password`. A secret is stored scrambled in the config. The older `enable password` command is stored as plain text, so don't use it.
+- Passwords are case-sensitive, so type the capitals exactly.
+- From now on, typing `enable` will ask for `Password:`. This is the password it wants.
+
+**Which passwords can use `secret`?**
+
+| Password for | Command | Can it use `secret`? |
+|--------------|---------|----------------------|
+| Privileged EXEC (the `enable` password) | `enable secret {secret}` | Yes |
+| Console line | `password {password}` under `line console 0` | No, a line only has `password` |
+| VTY lines (remote logins) | `password {password}` under `line vty 0 15` | No, a line only has `password` |
+| A login username (for SSH) | `username {user} secret {password}` | Yes |
+
+### Step E: Add the console password
+
+```
+line console 0
+password {password}
+login
+exit
+```
+
+**You should see:** the prompt goes to `ASw-1(config-line)#` after the first line, and back to `ASw-1(config)#` after `exit`.
+
+`login` is what makes the switch actually ask for the password. If you leave it out, the password is set but never checked.
+
+### Step F: Add the VTY (remote login) password
+
+```
+line vty 0 15
+password {password}
+login
+exit
+```
+
+**You should see:** the same prompt changes as in Step E. The `0 15` means all 16 remote login lines.
+
+### Step G: Scramble the line passwords
+
+```
+service password-encryption
+```
+
+**You should see:** nothing. This hides the console and VTY passwords in the config so someone can't read them over your shoulder.
+
+### Step H: Add the MOTD banner
+
+```
+banner motd #{message}#
+```
+
+For example: `banner motd #Authorized access only!#`
+
+- The `#` marks where the message starts and ends. Use it on both sides, with no spaces.
+- Pick a character that is not in your message. If your message has a `#` in it, use `$` or `%` instead.
+- Make the message a warning. Don't write "Welcome," since that makes it sound like anyone can come in.
+
+### Step I: Give the switch an IP address
+
+```
+interface vlan 1
+ip address {ip} {mask}
+no shutdown
+exit
+```
+
+For example: `ip address 128.107.20.10 255.255.255.0`
+
+**You should see:** the prompt goes to `ASw-1(config-if)#`. After `no shutdown`, a message like `%LINK-5-CHANGED: Interface Vlan1, changed state to up` may pop up. That is good.
+
+Type the IP address and mask exactly. A typo here is an easy way to lose points.
+
+### Step J: Set the default gateway (only if your lab gives one)
+
+```
+ip default-gateway {gateway}
+```
+
+If your addressing table has no gateway (like Activity 2.9.1), skip this step.
+
+### Step K: Go back to Privileged EXEC
+
+```
+end
+```
+
+**You should see:** `ASw-1#` with a `#` and no `(config)` in it.
+
+### Step L: Save
+
+```
+copy running-config startup-config
+```
+
+**You should see:** `Destination filename [startup-config]?` Press Enter. Then it shows `Building configuration...` and `[OK]`.
+
+The short version is `copy run start`. If you skip this step, everything is lost when the switch restarts.
+
+### Step M: Check your work
+
+```
+show running-config
+show ip interface brief
+```
+
+**What to look for** in `show running-config` (press the Space bar when it shows `--More--` to see the next page, or `q` to stop):
+
+```
+hostname ASw-1
+!
+enable secret 5 $1$mERr$...
+!
+service password-encryption
+!
+interface Vlan1
+ ip address 128.107.20.10 255.255.255.0
+!
+banner motd ^CAuthorized access only!^C
+!
+line con 0
+ password 7 08...
+ login
+!
+line vty 0 4
+ password 7 08...
+ login
+line vty 5 15
+ password 7 08...
+ login
+```
+
+Your scrambled text will look different from this, and that's fine. Check that the hostname, banner, IP address, and the `password` and `login` lines are all there. The `^C` on the banner line is how the switch shows the `#` marks.
+
+In `show ip interface brief`, the `Vlan1` line should show your IP address and say `up` and `up` (wait for the green lights if it doesn't).
+
+### Step N: Test your login
+
+1. Type `exit` at the `ASw-1#` prompt.
+2. Press Enter.
+
+**You should see:** your banner message, then `User Access Verification`, then `Password:`.
+
+3. Type the **line password** (nothing shows as you type). You should get `ASw-1>`.
+4. Type `enable`. It asks for `Password:`. Type the **enable secret**. You should get `ASw-1#`.
+
+If both passwords work, you are done.
+
+### Optional: use secret for the lines too
+
+The console and VTY lines only have `password`. If you want them to use a secret anyway, make a username with a secret and tell the lines to use it. Only do this when your lab does not say to use one password for all lines.
+
+```
+username {user} secret {password}
+line console 0
+login local
+exit
+line vty 0 15
+login local
+exit
+```
+
+After this, the console and remote logins ask for a username and a password, and the password is stored as a secret.
+
+### Copy-and-paste template
+
+Replace each {value} before you type it. If you skip the gateway, delete that line.
+
+```
+enable
+configure terminal
+hostname {name}
+enable secret {secret}
+line console 0
+password {password}
+login
+exit
+line vty 0 15
+password {password}
+login
+exit
+service password-encryption
+banner motd #your message here#
+interface vlan 1
+ip address {ip} {mask}
+no shutdown
+exit
+ip default-gateway {gateway}
+end
+copy running-config startup-config
+```
+
+Packet Tracer sometimes skips lines when you paste a lot at once. If something is missing, paste a few lines at a time or type them one by one, then run `show running-config` to check.
+
+### What each prompt means
+
+| Prompt | Where you are | How to get out |
+|--------|---------------|----------------|
+| `Switch>` | User EXEC (you can't change anything) | Type `enable` to go up |
+| `Switch#` | Privileged EXEC | Type `configure terminal` to start configuring |
+| `Switch(config)#` | Global config | Type `end` to go back to `#` |
+| `Switch(config-line)#` | Setting up a line (console or VTY) | Type `exit` to go back one level, or `end` to go all the way |
+| `Switch(config-if)#` | Setting up an interface | Type `exit` to go back one level, or `end` to go all the way |
+
+If you ever get lost, type `end`. That always takes you back to `Switch#`.
+
+### Fixing mistakes
+
+| What went wrong | How to fix it |
+|-----------------|---------------|
+| Typed a password wrong | Go back to that spot and type the command again with the right password. It replaces the old one. |
+| Typed the hostname wrong | Type `hostname` again with the right name, in config mode. |
+| Typed the IP address wrong | Go into `interface vlan 1` and type `ip address` again with the right address and mask. |
+| Want to remove something | Put `no` in front of the command. For example, `no banner motd` or `no enable secret`. |
+| Typed a command in the wrong mode | Type `end`, then `configure terminal`, and go back into the right spot. |
+| Don't know what to type next | Type `?` to see your choices. |
+| Saw `% Invalid input detected` | There is a typo. The `^` points to where it is. Press the Up Arrow, fix it, and press Enter. |
+| Want to start completely over | At `Switch#`, type `erase startup-config`, press Enter, then type `reload` and answer no to saving. |
+
+### Typing tips
+
+- Press **Tab** after typing part of a command to finish it.
+- Press the **Up Arrow** to bring back your last command and fix a typo.
+- Use the short versions: `conf t`, `int vlan 1`, `sh run`, `copy run start`.
+- Press **Ctrl+Z** to jump back to `Switch#` from anywhere.
+
+### Final checklist
+
+- [ ] Hostname set (the prompt shows the new name)
+- [ ] Enable secret set (with `enable secret`, not `enable password`)
+- [ ] Console password and `login` set
+- [ ] VTY password and `login` set
+- [ ] `service password-encryption` turned on
+- [ ] MOTD banner set
+- [ ] VLAN 1 IP address and mask set, and `no shutdown` run
+- [ ] Saved with `copy running-config startup-config`
+- [ ] Checked with `show running-config` and `show ip interface brief`
+- [ ] Logged out and back in with both passwords to test them
+- [ ] The PC has an IP address and the right subnet mask, and `ping` works
 
 ## Background: Module 1 (Networking Today)
 
@@ -240,7 +647,7 @@ This is the module all the commands in this guide come from. This part covers th
 | SSH | A remote login over the network. Everything is encrypted. | The best choice for remote access. |
 | Telnet | A remote login over the network, but everything is sent in plain text. | Avoid it, since anyone watching the network can read it. |
 
-A new switch has no IP address, so the console is the only way to configure it the first time. To use the console you need a terminal program like PuTTY, Tera Term, or SecureCRT on your computer.
+A new switch has no IP address, so the console is the only way to configure it the first time. To use the console you need a terminal program like PuTTY, Tera Term, or SecureCRT on your computer. In Packet Tracer, the PC's Terminal app does this job.
 
 ### How IOS is built
 
@@ -341,13 +748,10 @@ Be careful with the banner wording. A message like "Welcome!" can make it look l
 ### Save it
 
 ```
-S1# copy running-config startup-config 
-You can also type the short version, `copy run start`, and it does the same thing.
-
-
+S1# copy running-config startup-config
 ```
 
-The running config lives in RAM and disappears on reboot. The startup config is saved in NVRAM and loads when the switch starts, so save after every set of changes. Check what is saved with `show startup-config`.
+The running config lives in RAM and disappears on reboot. The startup config is saved in NVRAM and loads when the switch starts, so save after every set of changes. You can also type the short version, `copy run start`, and it does the same thing. Check what is saved with `show startup-config`.
 
 | File | Where it is stored | What it does |
 |------|--------------------|--------------|
@@ -364,6 +768,26 @@ S1# reload
 If you made a mistake but have not saved yet, run `reload` and answer **no** when it asks to save. The switch comes back with the last saved config.
 
 **Backing up to a text file.** In a terminal program like Tera Term, turn on logging and then run `show running-config`. The whole config gets saved into a text file you can keep as a backup.
+
+### In Packet Tracer: Step 1
+
+1. Open a console connection. Click the PC that has the console cable, go to **Desktop**, then **Terminal**, click **OK**, and press Enter. (If your lab does not say to use the console, you can use the switch's **CLI** tab instead.)
+2. You start at `Switch>`. Type the commands from this step one at a time and press Enter after each one.
+3. Packet Tracer fills in commands when you press Tab, and `?` works the same as on a real switch.
+4. Once you set passwords, the switch asks for them the next time you log in:
+
+| What you see | What to type |
+|--------------|--------------|
+| `User Access Verification`, then `Password:` | The **console line password** (the one you set under `line console 0`) |
+| `Password:` right after you type `enable` | The **enable secret** |
+
+Nothing shows on the screen while you type a password. That is normal.
+
+5. Passwords are case-sensitive. If you mistype one (for example, a lowercase letter where a capital belongs), you don't have to delete anything. Go back to the right line, run the `password` command again with the correct one, and it replaces the old one.
+6. To check your work, run `show running-config`. With `service password-encryption` on, the line passwords show up as scrambled text like `password 7 08...`, and the enable secret shows as `secret 5 $1$...` or similar.
+7. `security passwords min-length 10` makes the switch refuse any password shorter than 10 characters. Only use it when your passwords are long enough. Some labs use short passwords (like a 5-character one), and with that command on, the switch would reject them.
+8. When you save, the switch asks `Destination filename [startup-config]?`. Press Enter and wait for `[OK]`.
+9. Don't mix up the **display name** (the label on the workspace) and the **hostname** (the name in the CLI prompt). The `hostname` command is the one that matters for grading.
 
 ## Step 2: IP addressing
 
@@ -401,6 +825,27 @@ Check it from the PC command prompt with `ipconfig`.
 
 A PC can get its address two ways. **Static** means you type the IP address, subnet mask, and default gateway yourself, which is used for things like servers and printers that need to stay the same. **DHCP** means the PC gets its address automatically from a DHCP server, which is how most regular PCs work. On a Windows PC, pick "Use the following IP address" for static or "Obtain an IP address automatically" for DHCP. In Packet Tracer, pick Static or DHCP.
 
+### In Packet Tracer: Step 2
+
+**On the switch:**
+
+1. Run the `interface vlan 1` commands from this step, including `no shutdown`.
+2. Run `show ip interface brief`. The `Vlan1` line should show the IP address and say `up` and `up`.
+3. If `Vlan1` is down, check the link lights. The switch only brings VLAN 1 up when at least one port is connected and green. Click the fast-forward button to speed it up.
+
+**On each PC:**
+
+1. Click the PC, go to **Desktop**, then **IP Configuration**.
+2. Pick **Static**.
+3. Type the **IP Address**.
+4. Click in the **Subnet Mask** box and check it. Packet Tracer fills this in by itself and it can be wrong (see the warning in Packet Tracer Basics). Fix it to match your addressing table.
+5. Leave **Default Gateway** blank if your table doesn't have one.
+6. Close the window. It saves on its own.
+
+**Test it:** on a PC, open **Desktop**, then **Command Prompt**, and run `ipconfig` to see your settings. Then try `ping` with the other PC's address and the switch's address. The first ping often shows one `Request timed out` while the devices learn each other's addresses. The rest should reply.
+
+If you ping the switch and it fails, the switch doesn't have its address yet. That is the most common reason, so go back and check `show ip interface brief`.
+
 ## Step 3: Switch ports (speed and duplex)
 
 Ports negotiate speed and duplex on their own by default, which works fine most of the time. You can set them by hand if a link does not come up right.
@@ -415,6 +860,14 @@ S1(config-if)# exit
 ```
 
 This sets the port to full duplex at 100 Mbps. To put it back on automatic, use `duplex auto` and `speed auto`. A duplex mismatch (full on one end, half on the other) causes a slow link with lots of errors, so keep both ends the same. `mdix auto` lets the port work with either a straight-through or a crossover cable.
+
+### In Packet Tracer: Step 3
+
+- The 2960 switch in Packet Tracer has `FastEthernet0/1` to `FastEthernet0/24` (short name `f0/1`) and two `GigabitEthernet` ports. Use the port your PC is plugged into.
+- A PC's network card is `FastEthernet0`, which runs at 100 Mbps. To match the switch settings on the PC side, click the PC, go to the **Config** tab, click **FastEthernet0**, and set **Bandwidth** to 100 Mbps and **Duplex** to Full Duplex.
+- When you change speed or duplex, the link light may flash red or amber for a moment and come back green. Click the fast-forward button if you don't want to wait.
+- Check the result with `show interfaces f0/1`. It shows the speed, the duplex, and any errors.
+- If you just want it to work, leave both ends on `auto`. Mismatched settings are what cause trouble, not auto.
 
 ## Step 4: Secure remote access with SSH
 
@@ -453,6 +906,29 @@ To connect from a PC:
 - On a Windows PC, open Command Prompt and type `ssh admin@192.168.1.2`
 
 Enter the password when it asks. If you get the `S1>` prompt, SSH works. Type `enable` and the enable secret to get to Privileged EXEC.
+
+### In Packet Tracer: Step 4
+
+- The `crypto key generate rsa modulus 1024` command takes a few seconds in Packet Tracer. Wait for the prompt to come back.
+- If you leave off `modulus 1024`, the switch asks `How many bits in the modulus [512]:`. Type `1024` and press Enter. (SSH version 2 needs at least 768, so don't use the 512 default.)
+- SSH works over the network, so you don't need the console cable for this part. The PC just needs to be on the same network as the switch and have an IP address.
+
+**Connect from a PC (option 1, Command Prompt):**
+
+1. Click the PC, go to **Desktop**, then **Command Prompt**.
+2. Type `ssh -l admin 192.168.1.2` (use your own username and switch address).
+3. Enter the password for that user. If you get the `S1>` prompt, SSH works.
+4. Type `enable` and the enable secret to get to Privileged EXEC.
+
+**Connect from a PC (option 2, Telnet / SSH Client):**
+
+1. Click the PC, go to **Desktop**, then **Telnet / SSH Client**.
+2. Set the **Connection Type** to **SSH**, type the switch's IP address and the username, and click **Connect**.
+3. Enter the password when it asks.
+
+**Check that Telnet is blocked:** from the PC Command Prompt, type `telnet 192.168.1.2`. After you run `transport input ssh`, it should fail to connect. That means only SSH is allowed.
+
+If SSH won't connect, check that the switch has an IP address (`show ip interface brief`), that the domain name and username are set, that the RSA keys exist, and that the VTY lines have `transport input ssh` and `login local`.
 
 ## Step 5: Verify, save, and troubleshoot
 
@@ -511,6 +987,188 @@ Do this when everything works. If you skip it, all of your changes are gone the 
 | Settings gone after a restart | You did not save | `copy running-config startup-config` |
 | CLI freezes after a typo | The switch is trying to look up the typo as a hostname | Press Ctrl+Shift+6 to stop it, and use `no ip domain-lookup` |
 | `% Incomplete command.` or `% Invalid input` | A missing word or a typo | Use Up Arrow, fix it, and use `?` to check |
+
+### In Packet Tracer: Step 5
+
+**Quick checks in Packet Tracer:**
+
+- Look at every cable. All the link lights should be green.
+- On every switch, run `show ip interface brief` and `show running-config`.
+- On every PC, run `ipconfig`, then `ping` the other devices.
+- In an activity file, click **Check Results** in the PT Activity window. Open the **Assessment Items** tab to see exactly which items are right and which are wrong.
+
+**Packet Tracer troubleshooting**
+
+| Problem | Likely cause | Fix |
+|---------|-------------|-----|
+| A link light is red | Wrong port, a device is off, or the port is shut down | Check the cable ends, turn the device on in the **Physical** tab, and run `no shutdown` on the port |
+| A link light is amber | The switch port is still starting up | Wait about 30 seconds or click fast-forward |
+| The Terminal window is blank | The console cable is missing or on the wrong port | Use the Console cable from `RS 232` on the PC to `Console` on the switch, then press Enter |
+| `User Access Verification` asks for a password | You already set a console password | Type the console line password (nothing shows as you type) |
+| The password is rejected | It has the wrong capital letters, or it was typed wrong when it was set | Passwords are case-sensitive. Re-run the `password` command with the right one on that line |
+| First ping times out | The devices are still learning each other's addresses | Run the ping again. The rest should reply |
+| Every ping fails | Wrong IP, wrong subnet mask, or the switch has no address yet | Check `ipconfig` on the PC and `show ip interface brief` on the switch |
+| Check Results is under 100% | One or more items are wrong | Open **Assessment Items** and fix every item with a red X |
+| Config is gone after reopening the file | You didn't run `copy run start` before saving | Run it on every switch, then save the Packet Tracer file with Ctrl+S |
+| Subnet mask is wrong on a PC | Packet Tracer filled in the mask by itself | Click in the Subnet Mask box and change it to what the table says |
+
+**Do not click Reset Activity** in a graded activity unless you want to start over. It wipes everything you set up.
+
+## Packet Tracer Lab: Activity 2.9.1
+
+This is the full walkthrough for the Packet Tracer activity "Basic Switch and End Device Configuration." It uses everything from Steps 1 and 2 above.
+
+**Scenario:** you are a new LAN technician and need to set up a small LAN with two switches and two PCs. The network is already cabled and powered on.
+
+### Topology
+
+```
+User-01 ---- ASw-1 ---- ASw-2 ---- User-02
+```
+
+### Addressing table
+
+| Device | Interface | IP address | Subnet mask |
+|--------|-----------|------------|-------------|
+| ASw-1 | VLAN 1 | 128.107.20.10 | 255.255.255.0 |
+| ASw-2 | VLAN 1 | 128.107.20.15 | 255.255.255.0 |
+| User-01 | NIC | 128.107.20.25 | 255.255.255.0 |
+| User-02 | NIC | 128.107.20.30 | 255.255.255.0 |
+
+There is no default gateway in this table, so leave the gateway blank on the PCs.
+
+### Passwords for this lab
+
+| Password | Where it is used |
+|----------|------------------|
+| `R4Xe3` | The console line and the VTY lines (the activity says to use it for "all lines") |
+| `C4aJa` | The enable secret |
+
+Both are case-sensitive. `R4Xe3` has a capital R and a capital X. These are the example passwords the activity gives, not real ones.
+
+### What the activity asks for and the command for each
+
+| Requirement | How to do it |
+|-------------|--------------|
+| Use a console connection to access each switch | Console cable from User-01 to ASw-1 and from User-02 to ASw-2, then **Desktop**, then **Terminal** on the PC |
+| Name ASw-1 and ASw-2 | `hostname ASw-1` and `hostname ASw-2` |
+| Use the R4Xe3 password for all lines | `password R4Xe3` and `login` under `line console 0` and `line vty 0 15` |
+| Use the C4aJa secret password | `enable secret C4aJa` |
+| Encrypt all clear text passwords | `service password-encryption` |
+| Configure an appropriate MOTD banner | `banner motd #Authorized access only!#` |
+| Configure addressing for all devices | `interface vlan 1` addresses on the switches, and static IPs on the PCs |
+| Save your configurations | `copy running-config startup-config` on both switches |
+| Verify connectivity between all devices | `ping` from a PC |
+
+The switches only have a console line and VTY lines (no AUX), so "all lines" means those two.
+
+### 1. Make the console connections
+
+1. Click the **Connections** icon (the lightning bolt) and pick the light blue **Console** cable.
+2. Click **User-01** and choose `RS 232`. Then click **ASw-1** and choose `Console`.
+3. Click the **Console** cable again. Click **User-02** and choose `RS 232`. Then click **ASw-2** and choose `Console`.
+
+### 2. Configure ASw-1
+
+Click **User-01**, go to **Desktop**, then **Terminal**, click **OK**, and press Enter. Then type:
+
+```
+enable
+configure terminal
+hostname ASw-1
+line console 0
+password R4Xe3
+login
+exit
+line vty 0 15
+password R4Xe3
+login
+exit
+enable secret C4aJa
+service password-encryption
+banner motd #Authorized access only!#
+interface vlan 1
+ip address 128.107.20.10 255.255.255.0
+no shutdown
+end
+copy running-config startup-config
+```
+
+Press Enter when it asks for the `startup-config` filename.
+
+### 3. Configure ASw-2
+
+Click **User-02**, go to **Desktop**, then **Terminal**, click **OK**, and press Enter. Then type:
+
+```
+enable
+configure terminal
+hostname ASw-2
+line console 0
+password R4Xe3
+login
+exit
+line vty 0 15
+password R4Xe3
+login
+exit
+enable secret C4aJa
+service password-encryption
+banner motd #Authorized access only!#
+interface vlan 1
+ip address 128.107.20.15 255.255.255.0
+no shutdown
+end
+copy running-config startup-config
+```
+
+If the switch asks for a password when you connect, it is the console line password (`R4Xe3`). After you type `enable`, it asks for the enable secret (`C4aJa`).
+
+### 4. Set up the PCs
+
+Click each PC, go to **Desktop**, then **IP Configuration**, and pick **Static**.
+
+| PC | IP Address | Subnet Mask |
+|----|-----------|-------------|
+| User-01 | 128.107.20.25 | 255.255.255.0 |
+| User-02 | 128.107.20.30 | 255.255.255.0 |
+
+**Check the Subnet Mask box after typing the IP address.** Packet Tracer fills in `255.255.0.0` for these addresses, and that is wrong here. Change it to `255.255.255.0` on both PCs.
+
+### 5. Verify connectivity
+
+On User-01, open **Desktop**, then **Command Prompt**, and run:
+
+```
+ping 128.107.20.30
+ping 128.107.20.10
+ping 128.107.20.15
+```
+
+The first ping may time out once. The rest should reply. If the ping to a switch fails, that switch doesn't have its VLAN 1 address yet (see Step 2).
+
+### 6. Check your score
+
+In the PT Activity window, click **Check Results**, then open the **Assessment Items** tab. Check Results looks at these items:
+
+| Device | Items checked |
+|--------|---------------|
+| ASw-1 and ASw-2 | Banner MOTD, console line password, enable secret, host name, VLAN 1 IP address, VLAN 1 port status, VLAN 1 subnet mask, service password-encryption, startup config, VTY line password |
+| User-01 and User-02 | FastEthernet0 IP address and subnet mask |
+
+Fix everything that shows a red X, then check again. A score under 100% means at least one of these is wrong.
+
+### Mistakes to watch for
+
+These are the ones that cost points in this lab:
+
+- **Wrong subnet mask on the PCs.** Packet Tracer fills in `255.255.0.0` by itself. Change it to `255.255.255.0`.
+- **A typo in the switch IP address.** The VLAN 1 address on ASw-1 has to be exactly `128.107.20.10`. Check it with `show ip interface brief`.
+- **Wrong capital letters in `R4Xe3`.** Re-run the `password` command on the console and VTY lines to fix it.
+- **Not saving.** Run `copy running-config startup-config` on both switches after the last change.
+- **Using the CLI tab when the lab says to use a console connection.** Use the Terminal on the PC with the console cable.
+- **Skipping `no shutdown` or not waiting for the green lights.** VLAN 1 won't come up without them.
+- **Clicking Reset Activity.** This wipes everything you set up.
 
 ## Background: Module 3 (Protocols and Models)
 
@@ -746,3 +1404,24 @@ This is why every device needs a default gateway set. Without it, a device canno
 | `reload` | Restarts the switch |
 | `ping address` | Tests connectivity |
 | `ipconfig` / `ipconfig /all` | Shows the IP settings on a Windows PC |
+
+## Packet Tracer cheat sheet
+
+| What you want to do | How to do it |
+|---------------------|--------------|
+| Add a switch | Network Devices, then Switches, then drag a 2960 onto the workspace |
+| Add a PC | End Devices, then drag a PC onto the workspace |
+| Connect two devices | Connections (lightning bolt), pick a cable, click the first device and a port, then the second device and a port |
+| Configure a switch with a console connection | Console cable from the PC `RS 232` port to the switch `Console` port, then PC **Desktop**, then **Terminal**, then OK |
+| Configure a switch without a cable | Click the switch, then the **CLI** tab |
+| Set a PC's IP address | PC, then **Desktop**, then **IP Configuration**, then Static |
+| Check the subnet mask | Look at the Subnet Mask box after typing the IP, because Packet Tracer fills it in |
+| See a PC's address settings | PC **Desktop**, then **Command Prompt**, then `ipconfig` |
+| Ping | PC **Desktop**, then **Command Prompt**, then `ping address` |
+| Log into a switch with SSH | PC **Command Prompt**, then `ssh -l username address` |
+| Make links turn green faster | Click the fast-forward button next to the Time clock |
+| Watch packets move | Click **Simulation**, use **Add Simple PDU**, then **Capture / Forward** |
+| Go back to normal | Click **Realtime** |
+| Check an activity | PT Activity window, then **Check Results**, then the **Assessment Items** tab |
+| Save the switch config | `copy run start` on each switch |
+| Save the Packet Tracer file | Ctrl+S |  Save as
