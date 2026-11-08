@@ -106,6 +106,8 @@ You only have to type enough of a command for it to be the only match. Some comm
 | `int f0/1` | `interface fastethernet 0/1` |
 | `sh run` | `show running-config` |
 | `sh ip int br` | `show ip interface brief` |
+| `copy run start` | `copy running-config startup-config` |
+
 
 If you type too little and more than one command matches, the switch says the command is ambiguous. Type a few more letters and try again.
 
@@ -339,7 +341,10 @@ Be careful with the banner wording. A message like "Welcome!" can make it look l
 ### Save it
 
 ```
-S1# copy running-config startup-config
+S1# copy running-config startup-config 
+You can also type the short version, `copy run start`, and it does the same thing.
+
+
 ```
 
 The running config lives in RAM and disappears on reboot. The startup config is saved in NVRAM and loads when the switch starts, so save after every set of changes. Check what is saved with `show startup-config`.
@@ -736,7 +741,7 @@ This is why every device needs a default gateway set. Without it, a device canno
 | `show ip interface brief` | Shows a short list of interfaces and their IP addresses |
 | `show ip ssh` | Shows if SSH is on and which version |
 | `show version` | Shows the IOS version and hardware info |
-| `copy running-config startup-config` | Saves the configuration |
+| `copy running-config startup-config` (or `copy run start`) | Saves the configuration |
 | `erase startup-config` | Deletes the saved configuration |
 | `reload` | Restarts the switch |
 | `ping address` | Tests connectivity |
